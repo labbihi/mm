@@ -1,0 +1,392 @@
+import tkinter as tk
+from tkinter import messagebox
+from tkinter import ttk
+from PIL import Image, ImageTk
+import json
+import os
+import re
+
+
+class Equipment:
+    def __init__(self, name, quantity, condition, available_to_use):
+        self.name = name
+        self.quantity = quantity
+        self.condition = condition
+        self.available_to_use = available_to_use
+
+
+class InventoryManager:
+    def __init__(self):
+        self.equipment_list = []
+
+    def add_equipment(self, name, quantity, condition, available_to_use):
+        equipment = Equipment(name, quantity, condition, available_to_use)
+        self.equipment_list.append(equipment)
+
+    def get_filtered_equipment(self, condition, availability):
+        filtered = self.equipment_list
+        if condition != "All":
+            filtered = [item for item in filtered if item.condition == condition]
+        if availability != "All":
+            available = True if availability == "Yes" else False
+            filtered = [item for item in filtered if item.available_to_use == available]
+
+        return filtered
+
+    def get_all_equipment(self):
+        return self.equipment_list
+
+    def get_equipment(self, index):
+        return self.equipment_list[index]
+
+    def update_equipment(self, index, name, quantity, condition, available_to_use):
+        self.equipment_list[index] = Equipment(name, quantity, condition, available_to_use)
+
+    def remove_equipment(self, index):
+        del self.equipment_list[index]
+
+
+class EquipmentApp:
+    def __init__(self, master):
+        self.master = master
+        self.master.title("Sport Material Manager")
+
+        # Maximize the window
+        self.master.state('zoomed')
+
+        # Define colors and styles
+        self.bg_color = "#f0f0f0"
+        self.title_color = "#4a7a8c"
+        self.button_color = "#558C8C"
+        self.button_text_color = "#ffffff"
+        self.frame_color = "#d9d9d9"
+        self.font = ("Helvetica", 12)
+
+        # Configure overall background color
+        self.master.configure(bg=self.bg_color)
+
+        # Create a frame for the title (top of the window)
+        self.title_frame = tk.Frame(self.master, bg=self.frame_color)
+        self.title_frame.grid(row=0, column=0, columnspan=2, padx=10, pady=10, sticky="nsew")
+
+        # Create a large title label inside the frame
+        self.title_label = tk.Label(self.title_frame, text="Welcome to Sport Material Manager!",
+                                    font=("Helvetica", 24, "bold"), fg=self.title_color, bg=self.frame_color)
+        self.title_label.pack(padx=10, pady=10)
+
+        # Create a frame for the buttons (left side of the window)
+        self.button_frame = tk.Frame(self.master, bg=self.bg_color)
+        self.button_frame.grid(row=1, column=0, sticky="ns", padx=10, pady=10)
+
+        self.add_button = tk.Button(self.button_frame, text="Add Equipment", command=self.open_add_equipment_window,
+                                    bg=self.button_color, fg=self.button_text_color, font=self.font, bd=0, padx=10, pady=5)
+        self.add_button.pack(side="top", fill="x", pady=5)
+
+        self.edit_button = tk.Button(self.button_frame, text="Edit Equipment", command=self.open_edit_equipment_window,
+                                     bg=self.button_color, fg=self.button_text_color, font=self.font, bd=0, padx=10, pady=5)
+        self.edit_button.pack(side="top", fill="x", pady=5)
+
+        self.remove_button = tk.Button(self.button_frame, text="Remove Equipment", command=self.remove_equipment,
+                                       bg=self.button_color, fg=self.button_text_color, font=self.font, bd=0, padx=10, pady=5)
+        self.remove_button.pack(side="top", fill="x", pady=5)
+
+        # Filter Button
+        self.filter_button = tk.Button(self.button_frame, text="Filter Equipment", command=self.open_filter_window,
+                                       bg=self.button_color, fg=self.button_text_color, font=self.font, bd=0, padx=10, pady=5)
+        self.filter_button.pack(side="top", fill="x", pady=5)
+
+        # Reset Filter Button
+        self.reset_button = tk.Button(self.button_frame, text="Reset Filter", command=self.reset_filter,
+                                      bg=self.button_color, fg=self.button_text_color, font=self.font, bd=0, padx=10, pady=5)
+        self.reset_button.pack(side="top", fill="x", pady=5)
+
+        # Exit Button
+        self.exit_button = tk.Button(self.button_frame, text="Exit", command=self.master.quit,
+                                     bg=self.button_color, fg=self.button_text_color, font=self.font, bd=0, padx=10, pady=5)
+        self.exit_button.pack(side="bottom", fill="x", pady=5)
+
+        # Equipment Treeview (table) to display equipment details (on the right)
+        self.treeview = ttk.Treeview(self.master, columns=("Item", "Quantity", "Condition", "Available to Use"),
+                                     show="headings")
+        self.treeview.heading("Item", text="Item")
+        self.treeview.heading("Quantity", text="Quantity")
+        self.treeview.heading("Condition", text="Condition")
+        self.treeview.heading("Available to Use", text="Available to Use")
+
+        # Set column widths for better visibility
+        self.treeview.column("Item", width=200, anchor="center")
+        self.treeview.column("Quantity", width=100, anchor="center")
+        self.treeview.column("Condition", width=150, anchor="center")
+        self.treeview.column("Available to Use", width=100, anchor="center")
+
+        self.treeview.grid(row=1, column=1, padx=10, pady=10, sticky="nsew")
+
+        # Style for the Treeview
+        style = ttk.Style()
+        style.theme_use("clam")
+        style.configure("Treeview.Heading", font=("Helvetica", 12, "bold"), background=self.title_color,
+                        foreground="white", borderwidth=2)
+        style.configure("Treeview", background=self.bg_color, fieldbackground=self.bg_color, font=self.font,
+                        rowheight=25, borderwidth=2)
+        style.map("Treeview", background=[("selected", self.button_color)])
+
+        # Configure grid weights to make the layout responsive
+        self.master.grid_rowconfigure(1, weight=1)
+        self.master.grid_columnconfigure(1, weight=3)  # Allow the treeview to take more space
+
+        # Simulate an inventory manager
+        self.inventory_manager = InventoryManager()
+
+        # Load data from file
+        self.load_data()
+
+        # Store the current filter criteria
+        self.current_filter_condition = "All"
+        self.current_filter_availability = "All"
+
+    def reset_filter(self):
+        self.current_filter_condition = "All"
+        self.current_filter_availability = "All"
+        self.refresh_equipment_list()
+
+    def open_filter_window(self):
+        # Create filter window
+        filter_window = tk.Toplevel(self.master)
+        filter_window.title("Filter Equipment")
+        self.center_window(filter_window, 500, 500)
+
+        label = tk.Label(filter_window, text="Select filter criteria:", font=self.font)
+        label.pack(pady=10)
+
+        # Condition filter
+        condition_label = tk.Label(filter_window, text="Condition:", font=self.font)
+        condition_label.pack(pady=5)
+        condition_combobox = ttk.Combobox(filter_window, values=["All", "New", "Good", "Fair", "Worn", "Damaged"], state="readonly", font=self.font)
+        condition_combobox.set(self.current_filter_condition)
+        condition_combobox.pack(pady=5)
+
+        # Availability filter
+        availability_label = tk.Label(filter_window, text="Availability:", font=self.font)
+        availability_label.pack(pady=5)
+        availability_combobox = ttk.Combobox(filter_window, values=["All", "Yes", "No"], state="readonly", font=self.font)
+        availability_combobox.set(self.current_filter_availability)
+        availability_combobox.pack(pady=5)
+
+        # Confirm button
+        def on_filter_confirm():
+            self.current_filter_condition = condition_combobox.get()
+            self.current_filter_availability = availability_combobox.get()
+            self.apply_filter(self.current_filter_condition, self.current_filter_availability)
+            filter_window.destroy()  # Close the filter window after applying the filter
+
+        button_frame = tk.Frame(filter_window, bg=self.bg_color)
+        button_frame.pack(pady=10)
+
+        confirm_button = tk.Button(button_frame, text="Confirm", command=on_filter_confirm, bg=self.button_color, fg=self.button_text_color, font=self.font)
+        confirm_button.pack(padx=10, pady=10)
+
+    def apply_filter(self, condition, availability):
+        filtered_items = self.inventory_manager.get_filtered_equipment(condition, availability)
+        self.refresh_equipment_list(filtered_items)
+
+    def open_add_equipment_window(self):
+        add_window = tk.Toplevel(self.master)
+        add_window.title("Add Equipment")
+        self.center_window(add_window, 500, 500)
+
+        tk.Label(add_window, text="Name:", font=self.font).pack(pady=5)
+        name_entry = tk.Entry(add_window, font=self.font)
+        name_entry.pack(pady=5)
+        name_error_label = tk.Label(add_window, text="", font=self.font, fg="red")
+        name_error_label.pack()
+
+        tk.Label(add_window, text="Quantity:", font=self.font).pack(pady=5)
+        quantity_entry = tk.Entry(add_window, font=self.font)
+        quantity_entry.pack(pady=5)
+        quantity_error_label = tk.Label(add_window, text="", font=self.font, fg="red")
+        quantity_error_label.pack()
+
+        tk.Label(add_window, text="Condition:", font=self.font).pack(pady=5)
+        condition_combobox = ttk.Combobox(add_window, values=["New", "Good", "Fair", "Worn", "Damaged"], state="readonly", font=self.font)
+        condition_combobox.pack(pady=5)
+        condition_error_label = tk.Label(add_window, text="", font=self.font, fg="red")
+        condition_error_label.pack()
+
+        tk.Label(add_window, text="Available to Use:", font=self.font).pack(pady=5)
+        availability_combobox = ttk.Combobox(add_window, values=["Yes", "No"], state="readonly", font=self.font)
+        availability_combobox.pack(pady=5)
+        availability_error_label = tk.Label(add_window, text="", font=self.font, fg="red")
+        availability_error_label.pack()
+
+        def validate_entries():
+            valid = True
+            if not re.match("^[A-Za-z ]*$", name_entry.get()):
+                name_error_label.config(text="Name cannot contain numbers or special characters")
+                valid = False
+            else:
+                name_error_label.config(text="")
+
+            if not quantity_entry.get().isdigit():
+                quantity_error_label.config(text="Quantity must be a number")
+                valid = False
+            else:
+                quantity_error_label.config(text="")
+
+            if not condition_combobox.get():
+                condition_error_label.config(text="Condition cannot be empty")
+                valid = False
+            else:
+                condition_error_label.config(text="")
+
+            if not availability_combobox.get():
+                availability_error_label.config(text="Availability cannot be empty")
+                valid = False
+            else:
+                availability_error_label.config(text="")
+
+            return valid
+
+        def on_add_confirm():
+            if validate_entries():
+                name = name_entry.get()
+                quantity = int(quantity_entry.get())
+                condition = condition_combobox.get()
+                available_to_use = availability_combobox.get() == "Yes"
+                self.inventory_manager.add_equipment(name, quantity, condition, available_to_use)
+                self.refresh_equipment_list()
+                self.save_data()  # Save data after adding equipment
+                add_window.destroy()
+
+        tk.Button(add_window, text="Add", command=on_add_confirm, bg=self.button_color, fg=self.button_text_color, font=self.font).pack(pady=10)
+
+    def open_edit_equipment_window(self):
+        selected_item = self.treeview.selection()
+        if not selected_item:
+            messagebox.showwarning("Warning", "Please select an item to edit.")
+            return
+
+        item_index = self.treeview.index(selected_item)
+        item = self.inventory_manager.get_equipment(item_index)
+
+        edit_window = tk.Toplevel(self.master)
+        edit_window.title("Edit Equipment")
+        self.center_window(edit_window, 500, 500)
+
+        tk.Label(edit_window, text="Name:", font=self.font).pack(pady=5)
+        name_entry = tk.Entry(edit_window, font=self.font)
+        name_entry.insert(0, item.name)
+        name_entry.pack(pady=5)
+        name_error_label = tk.Label(edit_window, text="", font=self.font, fg="red")
+        name_error_label.pack()
+
+        tk.Label(edit_window, text="Quantity:", font=self.font).pack(pady=5)
+        quantity_entry = tk.Entry(edit_window, font=self.font)
+        quantity_entry.insert(0, item.quantity)
+        quantity_entry.pack(pady=5)
+        quantity_error_label = tk.Label(edit_window, text="", font=self.font, fg="red")
+        quantity_error_label.pack()
+
+        tk.Label(edit_window, text="Condition:", font=self.font).pack(pady=5)
+        condition_combobox = ttk.Combobox(edit_window, values=["New", "Good", "Fair", "Worn", "Damaged"], state="readonly", font=self.font)
+        condition_combobox.set(item.condition)
+        condition_combobox.pack(pady=5)
+        condition_error_label = tk.Label(edit_window, text="", font=self.font, fg="red")
+        condition_error_label.pack()
+
+        tk.Label(edit_window, text="Available to Use:", font=self.font).pack(pady=5)
+        availability_combobox = ttk.Combobox(edit_window, values=["Yes", "No"], state="readonly", font=self.font)
+        availability_combobox.set("Yes" if item.available_to_use else "No")
+        availability_combobox.pack(pady=5)
+        availability_error_label = tk.Label(edit_window, text="", font=self.font, fg="red")
+        availability_error_label.pack()
+
+        def validate_entries():
+            valid = True
+            if not re.match("^[A-Za-z ]*$", name_entry.get()):
+                name_error_label.config(text="Name cannot contain numbers or special characters")
+                valid = False
+            else:
+                name_error_label.config(text="")
+
+            if not quantity_entry.get().isdigit():
+                quantity_error_label.config(text="Quantity must be a number")
+                valid = False
+            else:
+                quantity_error_label.config(text="")
+
+            if not condition_combobox.get():
+                condition_error_label.config(text="Condition cannot be empty")
+                valid = False
+            else:
+                condition_error_label.config(text="")
+
+            if not availability_combobox.get():
+                availability_error_label.config(text="Availability cannot be empty")
+                valid = False
+            else:
+                availability_error_label.config(text="")
+
+            return valid
+
+        def on_edit_confirm():
+            if validate_entries():
+                name = name_entry.get()
+                quantity = int(quantity_entry.get())
+                condition = condition_combobox.get()
+                available_to_use = availability_combobox.get() == "Yes"
+                self.inventory_manager.update_equipment(item_index, name, quantity, condition, available_to_use)
+                self.refresh_equipment_list()
+                self.save_data()  # Save data after editing equipment
+                edit_window.destroy()
+
+        tk.Button(edit_window, text="Save", command=on_edit_confirm, bg=self.button_color, fg=self.button_text_color, font=self.font).pack(pady=10)
+
+    def remove_equipment(self):
+        selected_item = self.treeview.selection()
+        if not selected_item:
+            messagebox.showwarning("Warning", "Please select an item to remove.")
+            return
+
+        item_index = self.treeview.index(selected_item)
+        item = self.inventory_manager.get_equipment(item_index)
+
+        confirm = messagebox.askyesno("Confirm Removal", f"Are you sure you want to remove '{item.name}'?")
+        if confirm:
+            self.inventory_manager.remove_equipment(item_index)
+            self.refresh_equipment_list()
+            self.save_data()  # Save data after removing equipment
+
+    def refresh_equipment_list(self, items=None):
+        for i in self.treeview.get_children():
+            self.treeview.delete(i)
+
+        if items is None:
+            items = self.inventory_manager.get_all_equipment()
+
+        for item in items:
+            available_to_use = "Yes" if item.available_to_use else "No"
+            self.treeview.insert("", "end", values=(item.name, item.quantity, item.condition, available_to_use))
+
+    def center_window(self, window, width, height):
+        screen_width = window.winfo_screenwidth()
+        screen_height = window.winfo_screenheight()
+        x = (screen_width / 2) - (width / 2)
+        y = (screen_height / 2) - (height / 2)
+        window.geometry(f'{width}x{height}+{int(x)}+{int(y)}')
+
+    def save_data(self):
+        with open("equipment_data.json", "w") as file:
+            json.dump([item.__dict__ for item in self.inventory_manager.get_all_equipment()], file)
+
+    def load_data(self):
+        if os.path.exists("equipment_data.json"):
+            with open("equipment_data.json", "r") as file:
+                data = json.load(file)
+                for item in data:
+                    self.inventory_manager.add_equipment(item["name"], item["quantity"], item["condition"], item["available_to_use"])
+            self.refresh_equipment_list()
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = EquipmentApp(root)
+    root.mainloop()
