@@ -5,6 +5,8 @@ import json
 import os
 import re
 
+
+# By Pr.LABBIHI
 class Equipment:
     def __init__(self, name, quantity, condition, available_to_use):
         self.name = name
