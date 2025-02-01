@@ -5,28 +5,7 @@ import json
 import os
 import re
 
-
-# By Pr.LABBIHI
-class Equipment:
-    def __init__(self, name, quantity, condition, available_to_use):
-        self.name = name
-        self.quantity = quantity
-        self.condition = condition
-        self.available_to_use = available_to_use
-
-class Category:
-    def __init__(self, name):
-        self.name = name
-        self.equipment_list = []
-
-    def add_equipment(self, equipment):
-        self.equipment_list.append(equipment)
-
-    def remove_equipment(self, equipment):
-        self.equipment_list.remove(equipment)
-
-    def get_equipment(self):
-        return self.equipment_list
+from entities import equipment, category
 
 class InventoryManager:
     def __init__(self):
