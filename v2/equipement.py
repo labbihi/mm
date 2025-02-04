@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 # Données fictives pour chaque matière académique
@@ -78,11 +78,11 @@ data = {
         "availability_counts": [50, 15],
     },
 }
-
 def show_statistics():
     # Fermer la fenêtre des statistiques précédente si elle existe
     if hasattr(show_statistics, "stats_window") and show_statistics.stats_window.winfo_exists():
         show_statistics.stats_window.destroy()
+
 
     # Récupérer la matière sélectionnée
     matiere = combo_matiere.get()
@@ -100,6 +100,23 @@ def show_statistics():
     # Titre
     title_label = tk.Label(show_statistics.stats_window, text=f"Statistiques des Matériels - {matiere}", font=("Helvetica", 20, "bold"), fg="#4a7a8c", bg="#f0f0f0")
     title_label.pack(pady=20)
+
+    # 📌 Cadre pour le tableau des équipements et quantités
+    frame_table = tk.Frame(show_statistics.stats_window, bg="#ffffff", padx=10, pady=10)
+    frame_table.pack(pady=10, fill="x")
+
+    # 📊 Tableau affichant les équipements et leurs quantités
+    tree = ttk.Treeview(frame_table, columns=("Équipement", "Quantité"), show="headings", height=5)
+    tree.heading("Équipement", text="Équipement")
+    tree.heading("Quantité", text="Quantité")
+    tree.column("Équipement", width=200)
+    tree.column("Quantité", width=100)
+
+    # Insertion des données dans le tableau
+    for equip, qty in zip(matiere_data["equipments"], matiere_data["quantities"]):
+        tree.insert("", "end", values=(equip, qty))
+
+    tree.pack(pady=5)
 
     # Créer les graphiques
     fig, axes = plt.subplots(1, 3, figsize=(14, 4))
@@ -149,6 +166,3 @@ btn_show_stats.pack(pady=10)
 
 # Lancer l'application
 root.mainloop()
-
-
-

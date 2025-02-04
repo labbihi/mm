@@ -1,1 +1,18 @@
-[{"name": "Football", "quantity": 2, "condition": "Good", "available_to_use": false}]
+{
+    "Physique": {
+        "equipments": ["Oscilloscopes", "Multimètres", "Lentilles", "Systèmes optiques", "Bobines"],
+        "quantities": [10, 15, 8, 5, 12],
+        "conditions": ["Neuf", "Bon", "Usé", "Endommagé"],
+        "condition_counts": [8, 12, 6, 2],
+        "availability_labels": ["Disponible", "Indisponible"],
+        "availability_counts": [20, 5]
+    },
+    "Chimie": {
+        "equipments": ["Béchers", "Pipettes", "Microscopes", "Tubes à essai", "Agitateurs"],
+        "quantities": [20, 30, 10, 50, 8],
+        "conditions": ["Neuf", "Bon", "Usé", "Endommagé"],
+        "condition_counts": [15, 20, 10, 5],
+        "availability_labels": ["Disponible", "Indisponible"],
+        "availability_counts": [25, 10]
+    }
+}
