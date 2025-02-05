@@ -1,0 +1,69 @@
+{
+    "categories": [
+        {
+            "id": 1,
+            "name": "Laboratory",
+            "equipments": [
+                {
+                    "id": 1,
+                    "name": "Microscope",
+                    "quantity": 5,
+                    "condition": "Good",
+                    "available_to_use": true,
+                    "category": 1
+                }
+            ]
+        },
+        {
+            "id": 2,
+            "name": "Informatique",
+            "equipments": [
+                {
+                    "id": 1,
+                    "name": "Ordinateurs",
+                    "quantity": 20,
+                    "condition": "New",
+                    "available_to_use": true,
+                    "category": 2
+                },
+                {
+                    "id": 2,
+                    "name": "Ecrans",
+                    "quantity": 15,
+                    "condition": "Good",
+                    "available_to_use": true,
+                    "category": 2
+                },
+                {
+                    "id": 3,
+                    "name": "Claviers",
+                    "quantity": 25,
+                    "condition": "Fair",
+                    "available_to_use": false,
+                    "category": 2
+                },
+                {
+                    "id": 4,
+                    "name": "Souris",
+                    "quantity": 30,
+                    "condition": "Damaged",
+                    "available_to_use": false,
+                    "category": 2
+                },
+                {
+                    "id": 5,
+                    "name": "Imprimantes",
+                    "quantity": 10,
+                    "condition": "Worn",
+                    "available_to_use": false,
+                    "category": 2
+                }
+            ]
+        },
+        {
+            "id": 3,
+            "name": "Sport",
+            "equipments": []
+        }
+    ]
+}
