@@ -29,25 +29,24 @@ def show_statistiques(content_frame, title_color, font, bg):
         category_combobox.grid(row=0, column=1, padx=10, pady=10, sticky="ew")
 
         def on_category_select(event):
-            selected_category_name = category_combobox.get()
-            global current_category 
-            current_category = inventory_manager.get_category(selected_category_name)
-            refresh_equipment_list(current_category)
+            selected_category_name = category_combobox.get()           
+            refresh_equipment_list(selected_category_name)
 
         category_combobox.bind("<<ComboboxSelected>>", on_category_select)
 
 
-        def refresh_equipment_list():
-            data = inventory_manager.get_category_for_statistique(current_category)
+        def refresh_equipment_list(category_name):
+
+            data = inventory_manager.get_category_for_statistique(category_name)
+
 
             # Récupérer les données de la matière sélectionnée
-            matiere = current_category
+            matiere = category_name
             matiere_data = data.get(matiere)
 
             # Titre
-            title_label = tk.Label(content_frame, text=f"Statistiques",
-                    font=("Helvetica", 12, "bold"), fg=title_color)
-            content_frame.bg = bg
+            title_label = tk.Label(content_frame, text=f"Statistique de la catégorie: {matiere}",
+                    font=font, fg=title_color, bg=bg)
             title_label.grid(row=1, column=0, columnspan=3, pady=10)
 
             # Création des graphiques
@@ -79,4 +78,4 @@ def show_statistiques(content_frame, title_color, font, bg):
             canvas.get_tk_widget().grid(row=2, column=0, columnspan=3)
 
 
-        refresh_equipment_list()
+        refresh_equipment_list(current_category)
