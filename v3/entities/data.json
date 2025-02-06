@@ -68,7 +68,32 @@
         {
             "id": 4,
             "name": "Physics",
-            "equipments": []
+            "equipments": [
+                {
+                    "id": 6,
+                    "name": "Eprouvette",
+                    "quantity": 4,
+                    "condition": "Good",
+                    "available_to_use": true,
+                    "category": 4
+                },
+                {
+                    "id": 7,
+                    "name": "Dynamometre",
+                    "quantity": 12,
+                    "condition": "New",
+                    "available_to_use": true,
+                    "category": 4
+                },
+                {
+                    "id": null,
+                    "name": "test",
+                    "quantity": 0,
+                    "condition": "Good",
+                    "available_to_use": false,
+                    "category": 4
+                }
+            ]
         },
         {
             "id": 5,

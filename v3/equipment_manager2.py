@@ -220,10 +220,10 @@ class EquipmentApp:
                 quantity = int(quantity_entry.get())
                 condition = condition_combobox.get()
                 available_to_use = availability_combobox.get() == "Yes"
-                equipment = Equipment(None,name, quantity, condition, available_to_use, self.current_category)
+                equipment = Equipment(self.inventory_manager.newEqId(),name, quantity, condition, available_to_use, self.current_category)
                 self.current_category.add_equipment(equipment)
                 self.refresh_equipment_list()
-                self.save_data()  # Save data after adding equipment
+                self.inventory_manager.add_equipment_to_category(self.current_category.id, equipment)  # Save data after adding equipment
                 add_window.destroy()
 
         tk.Button(add_window, text="Add", command=on_add_confirm, bg=self.button_color, fg=self.button_text_color, font=self.font).pack(pady=10)
@@ -305,7 +305,7 @@ class EquipmentApp:
                 available_to_use = availability_combobox.get() == "Yes"
                 self.current_category.get_equipment()[item_index] = Equipment(None, name, quantity, condition, available_to_use, self.current_category)
                 self.refresh_equipment_list()
-                self.save_data()  # Save data after editing equipment
+                self.inventory_manager.save_data()  # Save data after editing equipment
                 edit_window.destroy()
 
         tk.Button(edit_window, text="Save", command=on_edit_confirm, bg=self.button_color, fg=self.button_text_color, font=self.font).pack(pady=10)
@@ -323,7 +323,7 @@ class EquipmentApp:
         if confirm:
             self.current_category.remove_equipment(item)
             self.refresh_equipment_list()
-            self.save_data()  # Save data after removing equipment
+            self.inventory_manager.save_data()  # Save data after removing equipment
 
     def refresh_equipment_list(self, items=None):
         for i in self.treeview.get_children():
@@ -409,7 +409,7 @@ class EquipmentApp:
         category_name = self.category_listbox.get(selected_category)
         confirm = messagebox.askyesno("Confirm Removal", f"Are you sure you want to remove '{category_name}'?")
         if confirm:
-            self.inventory_manager.categories.pop(selected_category[0])
+            self.inventory_manager.remove_category(selected_category[0].id)  #.categories.pop(selected_category[0])
             self.category_listbox.delete(selected_category)
 
     def select_category(self):
@@ -428,17 +428,17 @@ class EquipmentApp:
         # Close the category window after selecting a category
         self.category_window.destroy()
 
-    def save_data(self):
-        data = {
-            "equipment_list": [item.__dict__ for item in self.inventory_manager.get_all_equipment()],
-            "categories": [category.__dict__ for category in self.inventory_manager.get_all_categories()]
-        }
-        try:
-            with open("equipment_data.json", "w") as file:
-                json.dump(data, file, indent=4)  # Use indent for pretty-printing and better readability
-        except Exception as e:
-            print(f"Error saving data: {e}")
-
+    """  def save_data(self):
+            data = {
+                "equipment_list": [item.__dict__ for item in self.inventory_manager.get_all_equipment()],
+                "categories": [category.__dict__ for category in self.inventory_manager.get_all_categories()]
+            }
+            try:
+                with open("equipment_data.json", "w") as file:
+                    json.dump(data, file, indent=4)  # Use indent for pretty-printing and better readability
+            except Exception as e:
+                print(f"Error saving data: {e}")
+    """
     def load_data(self):
         if os.path.exists("equipment_data.json"):
             try:

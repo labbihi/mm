@@ -18,9 +18,3 @@ class Equipment:
             'available_to_use': self.available_to_use,
             'category': self.category.id,
         }
-
-    @staticmethod
-    def paginate(equipments, page, per_page):
-        start = (page - 1) * per_page
-        end = page * per_page
-        return equipments[start:end]

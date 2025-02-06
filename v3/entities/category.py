@@ -83,11 +83,10 @@ class InventoryManager:
         self.categories = [cat for cat in self.categories if cat.id != category_id]
         self.save_data()
 
-    def add_equipment_to_category(self, category_id, equipment_id, name, quantity, condition, available_to_use):
+    def add_equipment_to_category(self, category_id , equipment):
         category = next((cat for cat in self.categories if cat.id == category_id), None)
         if category:
-            new_equipment = Equipment(equipment_id, name, quantity, condition, available_to_use, category)
-            category.add_equipment(new_equipment)
+            category.add_equipment(equipment)
             self.save_data()
 
     def remove_equipment_from_category(self, category_id, equipment_id):
@@ -151,3 +150,7 @@ class InventoryManager:
 
         return category_data
 
+
+
+    def newEqId(self):
+        return max([eq.id for cat in self.categories for eq in cat.equipments], default=0) + 1
