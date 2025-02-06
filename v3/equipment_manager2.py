@@ -13,10 +13,7 @@ from entities.equipment import  Equipment
 class EquipmentApp:
     def __init__(self, master):
         self.master = master
-        #self.master.title("Sport Material Manager")
-
-        # Maximize the window
-        #self.master.state('zoomed')
+        self.master.configure(bg="#f0f0f0")
 
         # Define colors and styles
         self.bg_color = "#f0f0f0"
@@ -26,21 +23,27 @@ class EquipmentApp:
         self.frame_color = "#d9d9d9"
         self.font = ("Helvetica", 12)
 
-        # Configure overall background color
-        self.master.configure(bg=self.bg_color)
+        # Configure grid layout
+        self.master.grid_columnconfigure(0, weight=0)  # Fixed width for category selection
+        self.master.grid_columnconfigure(1, weight=1)  # Resizable for equipment list
+        self.master.grid_rowconfigure(0, weight=0)  # Fixed height for category selection
+        self.master.grid_rowconfigure(1, weight=1)  # Resizable for equipment list
+        self.master.grid_rowconfigure(2, weight=0)  # Fixed height for buttons
 
+        # Initialize the inventory manager
         self.inventory_manager = InventoryManager(os.path.join(os.path.dirname(__file__), 'entities', 'data.json'))
         self.inventory_manager.load_data()
 
-
         # Initialize the current_category attribute
         self.categories = self.inventory_manager.categories
+        self.current_category = None
 
-        
+        # Category selection
         self.category_combobox = ttk.Combobox(self.master, values=[category.name for category in self.categories], state="readonly", font=self.font)
         self.category_combobox.set("Select Category")
         self.category_combobox.grid(row=0, column=1, padx=10, pady=10, sticky="ew")
 
+        # Bind category selection event
         def on_category_select(event):
             selected_category_name = self.category_combobox.get()
             self.current_category = self.inventory_manager.get_category(selected_category_name)
@@ -49,34 +52,27 @@ class EquipmentApp:
 
         self.category_combobox.bind("<<ComboboxSelected>>", on_category_select)
 
-        # Equipment Treeview (table) to display equipment details (on the right)
-        self.treeview = ttk.Treeview(self.master, columns=("Item", "Quantity", "Condition", "Available to Use"),
-                                     show="headings")
+        # Equipment Treeview (table) to display equipment details
+        self.treeview = ttk.Treeview(self.master, columns=("Item", "Quantity", "Condition", "Available to Use"), show="headings")
         self.treeview.heading("Item", text="Item")
         self.treeview.heading("Quantity", text="Quantity")
         self.treeview.heading("Condition", text="Condition")
         self.treeview.heading("Available to Use", text="Available to Use")
 
-        # Set column widths for better visibility (slightly reduced width)
-        self.treeview.column("Item", width=120, anchor="center")  # Slightly reduced width
-        self.treeview.column("Quantity", width=90, anchor="center")  # Slightly reduced width
-        self.treeview.column("Condition", width=100, anchor="center")  # Slightly reduced width
-        self.treeview.column("Available to Use", width=100, anchor="center")  # Slightly reduced width
+        # Set column widths for better visibility
+        self.treeview.column("Item", width=120, anchor="center")
+        self.treeview.column("Quantity", width=90, anchor="center")
+        self.treeview.column("Condition", width=100, anchor="center")
+        self.treeview.column("Available to Use", width=100, anchor="center")
 
         # Place the Treeview with moderate expansion
         self.treeview.grid(row=1, column=1, padx=10, pady=10, sticky="nsew")
 
-        # Configure grid weights to allow moderate expansion
-        self.master.grid_columnconfigure(1, weight=1)  # Allow column to expand moderately
-        self.master.grid_rowconfigure(1, weight=1)  # Allow row to expand moderately
-
         # Style for the Treeview
         style = ttk.Style()
         style.theme_use("clam")
-        style.configure("Treeview.Heading", font=("Helvetica", 12, "bold"), background=self.title_color,
-                        foreground="white", borderwidth=2)
-        style.configure("Treeview", background=self.bg_color, fieldbackground=self.bg_color, font=self.font,
-                        rowheight=25, borderwidth=2)
+        style.configure("Treeview.Heading", font=("Helvetica", 12, "bold"), background=self.title_color, foreground="white", borderwidth=2)
+        style.configure("Treeview", background=self.bg_color, fieldbackground=self.bg_color, font=self.font, rowheight=25, borderwidth=2)
         style.map("Treeview", background=[("selected", self.button_color)])
 
         # Create a frame for the buttons below the table
@@ -89,37 +85,24 @@ class EquipmentApp:
         self.add_button.pack(side="left", fill="x", padx=5, pady=5)
 
         self.edit_button = tk.Button(self.bottom_button_frame, text="Edit Equipment", command=self.open_edit_equipment_window,
-                                     bg=self.button_color, fg=self.button_text_color, font=self.font, bd=0, padx=10, pady=5)
+                                    bg=self.button_color, fg=self.button_text_color, font=self.font, bd=0, padx=10, pady=5)
         self.edit_button.pack(side="left", fill="x", padx=5, pady=5)
 
         self.remove_button = tk.Button(self.bottom_button_frame, text="Remove Equipment", command=self.remove_equipment,
-                                       bg=self.button_color, fg=self.button_text_color, font=self.font, bd=0, padx=10, pady=5)
+                                    bg=self.button_color, fg=self.button_text_color, font=self.font, bd=0, padx=10, pady=5)
         self.remove_button.pack(side="left", fill="x", padx=5, pady=5)
 
         self.filter_button = tk.Button(self.bottom_button_frame, text="Filter Equipment", command=self.open_filter_window,
-                                       bg=self.button_color, fg=self.button_text_color, font=self.font, bd=0, padx=10, pady=5)
+                                    bg=self.button_color, fg=self.button_text_color, font=self.font, bd=0, padx=10, pady=5)
         self.filter_button.pack(side="left", fill="x", padx=5, pady=5)
 
         self.reset_button = tk.Button(self.bottom_button_frame, text="Reset Filter", command=self.reset_filter,
-                                      bg=self.button_color, fg=self.button_text_color, font=self.font, bd=0, padx=10, pady=5)
+                                    bg=self.button_color, fg=self.button_text_color, font=self.font, bd=0, padx=10, pady=5)
         self.reset_button.pack(side="left", fill="x", padx=5, pady=5)
 
         # Add a label to display the selected category
         self.category_label = tk.Label(self.bottom_button_frame, text="No category selected", fg="grey", font=self.font)
         self.category_label.pack(side="left", fill="x", padx=5, pady=5)
-
-        # Configure grid weights to make the layout responsive
-        self.master.grid_rowconfigure(1, weight=1)
-        self.master.grid_columnconfigure(1, weight=1)  # Allow the treeview to take more space
-
-        # Simulate an inventory manager
-        #self.inventory_manager = InventoryManager()
-
-        # Initialize the current_category attribute
-        #self.current_category = None
-
-        # Load data from file
-        #self.load_data()
 
         # Store the current filter criteria
         self.current_filter_condition = "All"
@@ -484,7 +467,7 @@ class EquipmentApp:
             except Exception as e:
                 print(f"Error loading data: {e}")
 
-#if __name__ == "__main__":
-#    root = tk.Tk()
-#    app = EquipmentApp(root)
-#    root.mainloop()
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = EquipmentApp(root)
+    root.mainloop()

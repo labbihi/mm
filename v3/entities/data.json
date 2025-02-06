@@ -64,6 +64,16 @@
             "id": 3,
             "name": "Sport",
             "equipments": []
+        },
+        {
+            "id": 4,
+            "name": "Physics",
+            "equipments": []
+        },
+        {
+            "id": 5,
+            "name": "aaaa",
+            "equipments": []
         }
     ]
 }
